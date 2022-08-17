@@ -1,0 +1,5 @@
+{
+  "load_extensions": {
+    "progNotebook/extension": true
+  }
+}
