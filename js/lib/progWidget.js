@@ -2,7 +2,7 @@ var d3 = require("d3");
 var lineWidgets = require('./codeLineChart.js');
 var scatWidgets = require('./codeScatterplotChart.js');
 var myUtils = require('./utils.js');
-
+var progress = require('./progressbar.js');
 
 class ProgWidget {
     constructor(container, parent) {
@@ -57,12 +57,13 @@ class ProgWidget {
 
         //
         var six = top.append('div').attr('class', 'six').append("fieldset");
-        six.append('legend').text('# Missing Values');
-        six.append('b').text('Missing X: ');
-        six.append('br');
-        six.append('b').text('Missing Y: ');
-        six.append('br');
-        six.append('b').text('Both: ');
+        six.append('legend').text('Progress');
+        this.progressBar = new progress.ProgressBar(seven, new myUtils.Viewport(0, 0, 187, 40), 0, 100);
+        // six.append('b').text('Missing X: ');
+        // six.append('br');
+        // six.append('b').text('Missing Y: ');
+        // six.append('br');
+        // six.append('b').text('Both: ');
 
         //
         var seven = top.append('div').attr('class', 'seven');
@@ -92,6 +93,10 @@ class ProgWidget {
     peelClick() {
         console.log('Peel Click');
         this.parent.signalStopProgression();
+    }
+
+    setProgress(n) {
+        this.progressBar.setState(n);
     }
 
     setMarginals(mx, my, mz) {

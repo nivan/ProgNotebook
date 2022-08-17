@@ -1,7 +1,14 @@
 import asyncio
 import pandas as pd
 import time
+import os
 
+def getNumChunks(filepath, chSize):
+    df = pd.read_csv(filepath, chunksize=chSize)
+    count = 0
+    for chunk in df:
+        count += 1
+    return count
 
 class DataSource:
     def __init__(self, filepath, callback, chSize=1000, sleepTime=1):
@@ -11,18 +18,27 @@ class DataSource:
         self.chSize = chSize
         self.sleepTime = sleepTime
         self.setRestart = False
+        #TODO: bad option but made this in order to implement it fast
+        self.numChunks = getNumChunks(filepath, chSize)#os.stat(filepath).st_size 
+        self.numChunksProcessed = 0
 
     def restart(self):
         pass
 
+    def getProgress(self):
+        return (self.numChunksProcessed,self.numChunks)
+
     def start(self):
+        self.numChunksProcessed = 0
         df = pd.read_csv(self.filepath, chunksize=self.chSize)
+
         for chunk in df:
             if self.setRestart:
                 pass
             else:
-                self.callback(chunk)
+                self.callback(chunk,self.getProgress())
                 time.sleep(self.sleepTime)
+            self.numChunksProcessed += 1
 
 
 def test():

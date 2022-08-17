@@ -33,7 +33,8 @@ var ProgScatterModel = widgets.DOMWidgetModel.extend({
         _view_module_version: '0.1.0',
         value: 'Hello World!',
         marginals: '{"mx":[],"my":[],"mz":[]}',
-        scatData: "{}"
+        scatData: "{}",
+        progress: 0
     })
 });
 
@@ -42,13 +43,13 @@ var ProgScatterModel = widgets.DOMWidgetModel.extend({
 var ProgScatterView = widgets.DOMWidgetView.extend({
     // Defines how the widget gets rendered into the DOM
     render: function () {
-        console.log('====>', this);
         this.myWidget = new progWidgets.ProgWidget(d3.select(this.el), this);
 
         // Observe changes in the value traitlet in Python, and define
         // a custom callback.
         this.model.on('change:marginals', this.changeMarginals, this);
         this.model.on('change:scatData', this.changeScatData, this);
+        this.model.on('change:progress', this.changeProgress, this);
     },
     changeMarginals: function () {
         var marginals = JSON.parse(this.model.get('marginals'));
@@ -60,6 +61,9 @@ var ProgScatterView = widgets.DOMWidgetView.extend({
     },
     signalStopProgression: function () {
         console.log(this);
+    },
+    changeProgress: function () {
+        this.myWidget.setProgress(this.model.get('progress'));
     }
 });
 
