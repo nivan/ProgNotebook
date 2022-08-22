@@ -34,7 +34,7 @@ var ProgScatterModel = widgets.DOMWidgetModel.extend({
         value: 'Hello World!',
         marginals: '{"mx":[],"my":[],"mz":[]}',
         scatData: "{}",
-        progress: 0
+        progress: '{"current":0, "max":0}'
     })
 });
 
@@ -44,7 +44,6 @@ var ProgScatterView = widgets.DOMWidgetView.extend({
     // Defines how the widget gets rendered into the DOM
     render: function () {
         this.myWidget = new progWidgets.ProgWidget(d3.select(this.el), this);
-
         // Observe changes in the value traitlet in Python, and define
         // a custom callback.
         this.model.on('change:marginals', this.changeMarginals, this);
@@ -63,7 +62,11 @@ var ProgScatterView = widgets.DOMWidgetView.extend({
         console.log(this);
     },
     changeProgress: function () {
-        this.myWidget.setProgress(this.model.get('progress'));
+        var _progressData = JSON.parse(this.model.get('progress'));
+        var myProgress = 0;
+        if (_progressData['max'] > 0)
+            myProgress = Math.round(100 * (_progressData['current'] / _progressData['max']));
+        this.myWidget.setProgress(myProgress);
     }
 });
 

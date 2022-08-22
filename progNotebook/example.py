@@ -64,5 +64,5 @@ class ProgScatterWidget(widgets.DOMWidget):
     #'xDomainRange':[0,1],'yDomainRange':[0,1],'zDomainRange':[0,1],'xRes':10,'yRes':10,'xLabel':'xAxis','yLabel':'yAxis','zLabel':'zLabel','sparse':0,'bins':[],'counts':[]
     scatData = Unicode("{}").tag(sync=True)
     #
-    progress = Int(0).tag(sync=True)
+    progress = Unicode('{"current":0, "max":0}').tag(sync=True)
     

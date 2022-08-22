@@ -136,7 +136,6 @@ function Legend(svg, color, {
             .tickFormat(typeof tickFormat === "function" ? tickFormat : undefined)
             .tickSize(tickSize)
             .tickValues(tickValues));
-    console.log(tickValues, tickValues.map(x));
 
     temp
         .call(tickAdjust)

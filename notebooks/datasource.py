@@ -36,10 +36,9 @@ class DataSource:
             if self.setRestart:
                 pass
             else:
+                self.numChunksProcessed += 1
                 self.callback(chunk,self.getProgress())
                 time.sleep(self.sleepTime)
-            self.numChunksProcessed += 1
-
 
 def test():
     pass
