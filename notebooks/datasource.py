@@ -30,15 +30,22 @@ class DataSource:
 
     def start(self):
         self.numChunksProcessed = 0
-        df = pd.read_csv(self.filepath, chunksize=self.chSize)
+        _file = open(self.filepath)
+        df = pd.read_csv(_file, chunksize=self.chSize)
 
         for chunk in df:
             if self.setRestart:
-                pass
+                break
             else:
                 self.numChunksProcessed += 1
                 self.callback(chunk,self.getProgress())
                 time.sleep(self.sleepTime)
+
+        if self.setRestart:
+            print('Restarting')
+            _file.close()
+            self.setRestart = False
+            self.start()
 
 def test():
     pass

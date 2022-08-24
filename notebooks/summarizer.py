@@ -63,7 +63,7 @@ class KLLSummarizer(Summarizer):
 
     def update(self, v):
         self._sketch.update(v)
-
+        
     def quantile(self,q):
         return self._sketch.quantile(q)
 

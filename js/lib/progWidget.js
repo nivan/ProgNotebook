@@ -68,7 +68,7 @@ class ProgWidget {
         //
         var seven = top.append('div').attr('class', 'seven');
         seven.style('text-align', 'center').style('align-items', 'center');
-        seven.append('input').attr("type", "button").attr("value", "Peel").on('click', this.peelClick);
+        seven.append('input').attr("type", "button").attr("value", "Peel").on('click', this.peelClick.bind(this));
 
         //
         var bottom = wrapper.append('div').attr('class', 'bottom');

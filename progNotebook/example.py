@@ -65,4 +65,16 @@ class ProgScatterWidget(widgets.DOMWidget):
     scatData = Unicode("{}").tag(sync=True)
     #
     progress = Unicode('{"current":0, "max":0}').tag(sync=True)
-    
+    #
+    restart = Int(0).tag(sync=True)
+
+    def __init__(self, **kwargs):
+        widgets.DOMWidget.__init__(self, **kwargs) # Call the base.
+
+       
+    def _restart_changed(self, name, old_value, new_value):
+        print('Restart changed!!!!!!',name,old_value,new_value)
+
+
+    def _value_changed(self, name, old_value, new_value):
+        print("Value Changed")
