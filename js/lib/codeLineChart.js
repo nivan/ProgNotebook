@@ -140,7 +140,6 @@ class LineChart {
 
     render() {
         if (this.needToUpdate && this.data) {
-            this.clear();
 
             //
             if (this.orientation == utils.Orientations.Vertical) {

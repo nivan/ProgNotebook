@@ -1,5 +1,5 @@
 from enum import Enum
-from math import fsum
+from math import fsum, isnan
 import numpy as np
 from abc import ABC, abstractmethod
 import pandas as pd
@@ -62,9 +62,24 @@ class BinnedScat:
     def update(self, pt):
         "Point is an elment of type (x,y,z)"
         # update marginal distributions
-        self._marginalX.update(pt[0])
-        self._marginalY.update(pt[1])
-        self._marginalZ.update(pt[2])
+        hasMissingData = False
+        if not isnan(pt[0]):
+            self._marginalX.update(pt[0])
+        else:
+            hasMissingData = True
+        if not isnan(pt[1]):
+            self._marginalY.update(pt[1])
+        else:
+            hasMissingData = True
+        if not isnan(pt[2]):
+            self._marginalZ.update(pt[2])
+        else:
+            hasMissingData = True            
+        
+        #only add to the scatterplot full points
+        if hasMissingData:
+            return
+
         # update bounding box
         numPointsAlreadyStored = self.getNumPoints()
         if numPointsAlreadyStored < self._initialBufferSize:
@@ -123,8 +138,8 @@ class BinnedScat:
         pmf.pop() # remove the last one which are the estimate for the ones above max
         return [x, pmf]
 
-    def processChunk(self,chunk,progress):
-        self.updateWithDataFrame(chunk, 'B', 'C', 'A')
+    def processChunk(self,chunk,progress):                        
+        self.updateWithDataFrame(chunk, self._dimX, self._dimY, self._dimZ)
         valueBB = self.getAggregationRange()
         summary = self.getSummary()
         # build data to pass to widget
@@ -135,9 +150,9 @@ class BinnedScat:
                     'zDomainRange': valueBB,
                     'xRes': self._resX,
                     'yRes': self._resY,
-                    'xLabel': 'xAxis',
-                    'yLabel': 'yAxis',
-                    'zLabel': 'zLabel',
+                    'xLabel': self._dimX,
+                    'yLabel': self._dimY,
+                    'zLabel': self._dimZ,
                     'sparse': 0,
                     'bins': summary[0].tolist(),
                     'counts': summary[1].tolist()

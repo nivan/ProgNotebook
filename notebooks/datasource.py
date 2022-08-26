@@ -11,7 +11,7 @@ def getNumChunks(filepath, chSize):
     return count
 
 class DataSource:
-    def __init__(self, filepath, callback, chSize=1000, sleepTime=0.01):
+    def __init__(self, filepath, callback, chSize=1000, sleepTime=1):
         self.filepath = filepath
         self.callback = callback
         self.file = None
