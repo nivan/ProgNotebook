@@ -11,7 +11,7 @@ def getNumChunks(filepath, chSize):
     return count
 
 class DataSource:
-    def __init__(self, filepath, callback, chSize=1000, sleepTime=1):
+    def __init__(self, filepath, callback, chSize=1000, sleepTime=0.01):
         self.filepath = filepath
         self.callback = callback
         self.file = None
@@ -32,9 +32,9 @@ class DataSource:
         self.numChunksProcessed = 0
         _file = open(self.filepath)
         df = pd.read_csv(_file, chunksize=self.chSize)
-
+        print('',end=' ')
+        #print(self.setRestart)
         for chunk in df:
-            print('next chunk')
             if self.setRestart:
                 break
             else:
@@ -43,7 +43,6 @@ class DataSource:
                 time.sleep(self.sleepTime)
 
         if self.setRestart:
-            print('Restarting')
             _file.close()
             self.setRestart = False
             self.start()

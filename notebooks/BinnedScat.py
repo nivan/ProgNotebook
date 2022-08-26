@@ -22,11 +22,13 @@ class BinnedScat:
 
     kllParam = 200
 
-    def __init__(self, x='x', y='y', z='z', resX=10, resY=10, initialBufferSize=1000):
+    def __init__(self, _callback, x='x', y='y', z='z', resX=10, resY=10, initialBufferSize=1000):        
         #
         self._dimX = x
         self._dimY = y
         self._dimZ = z
+        #
+        self._callback = _callback
         #
         self._resX = resX
         self._resY = resY
@@ -121,6 +123,57 @@ class BinnedScat:
         pmf.pop() # remove the last one which are the estimate for the ones above max
         return [x, pmf]
 
+    def processChunk(self,chunk,progress):
+        self.updateWithDataFrame(chunk, 'B', 'C', 'A')
+        valueBB = self.getAggregationRange()
+        summary = self.getSummary()
+        # build data to pass to widget
+        if summary:
+            bbox = self.getFixedBoundingBox()
+            scatData = {'xDomainRange': bbox[0],
+                    'yDomainRange': bbox[1],
+                    'zDomainRange': valueBB,
+                    'xRes': self._resX,
+                    'yRes': self._resY,
+                    'xLabel': 'xAxis',
+                    'yLabel': 'yAxis',
+                    'zLabel': 'zLabel',
+                    'sparse': 0,
+                    'bins': summary[0].tolist(),
+                    'counts': summary[1].tolist()
+                    }
+
+            #
+            histResolution = 10
+            pointsX = self.getMarginalHistogram(Axis.X,histResolution)
+            pointsX = [[pointsX[0][i],pointsX[1][i]] for i in range(len(pointsX[0]))]
+            #
+            pointsY = self.getMarginalHistogram(Axis.Y,histResolution)
+            pointsY = [[pointsY[0][i],pointsY[1][i]] for i in range(len(pointsY[0]))]
+            #
+            zHist = self.getCountHistogram()
+            numSplits = 10 + 1
+            xMin = zHist['range'][0]
+            xMax = zHist['range'][1]
+            step = (xMax - xMin) / numSplits
+            splits = [xMin + (i*step) for i in range(0, numSplits)]
+            pointsZ = list(zip(splits,list(zHist['values'])))
+            #
+            mx = {'points': pointsX, 'xLabel': 'Marginal ' + self._dimX}        
+            my = {'points': pointsY, 'xLabel': 'Marginal ' + self._dimY}
+            mz = {'points': pointsZ, 'xLabel': 'Marginal ' + self._dimZ}
+            obj = {"mx":mx,"my":my,"mz":mz}
+            myProgress = {'current': progress[0], 'max': progress[1]}
+            #
+            self._callback(scatData,obj,myProgress)
+            # try:
+            #     self.marginals = json.dumps(obj)
+            #     self.scatData = json.dumps(scatData)
+            #     self.progress = json.dumps(myProgress)
+            # except:
+            #     print(scat.getSummary())
+            #     halt
+
     def getAggregationRange(self):
         return self.valueBB
 
@@ -142,8 +195,8 @@ class BinnedScat:
 
 
 class CountBinScat(BinnedScat):
-    def __init__(self, x, y, z, resX, resY, initialBufferSize):
-        super().__init__(x, y, z, resX, resY, initialBufferSize)
+    def __init__(self, _callback, x, y, z, resX, resY, initialBufferSize):
+        super().__init__(_callback,x, y, z, resX, resY, initialBufferSize)
         self._bins = np.zeros((resX, resY))
         self._counts = self._bins
 
@@ -167,8 +220,8 @@ class CountBinScat(BinnedScat):
             return None
 
 class MeanBinScat(BinnedScat):
-    def __init__(self, x, y, z, resX, resY, initialBufferSize):
-        super().__init__(x, y, z, resX, resY, initialBufferSize)
+    def __init__(self, _callback, x, y, z, resX, resY, initialBufferSize):
+        super().__init__(_callback, x, y, z, resX, resY, initialBufferSize)
         self._bins = np.zeros((resX, resY))
         self._counts = np.zeros((resX, resY))
 
@@ -201,8 +254,8 @@ class MeanBinScat(BinnedScat):
 
 
 class QuantileBinScat(BinnedScat):
-    def __init__(self, x, y, z, resX, resY, initialBufferSize):
-        super().__init__(x, y, z, resX, resY, initialBufferSize)
+    def __init__(self, _callback, x, y, z, resX, resY, initialBufferSize):
+        super().__init__(_callback, x, y, z, resX, resY, initialBufferSize)
         self._bins = {}
 
     def _addPoint(self, key, pt):

@@ -71,17 +71,17 @@ class ProgScatterWidget(widgets.DOMWidget):
 
     def __init__(self, dataSource, **kwargs):
         widgets.DOMWidget.__init__(self, **kwargs) # Call the base.
-        self.dataSource = dataSource
+        self.dataSource = dataSource        
         self._process = None
 
-    def start(self):
+    def start(self):        
         self._process = multiprocessing.Process(target=self.dataSource.start)
         self._process.start()
 
     def signalRestart(self):        
         self._process.kill()
         self.restart = 0        
-        print('Restarting')
+        #print('Restarting')
         time.sleep(1)            
         self.start()
 
