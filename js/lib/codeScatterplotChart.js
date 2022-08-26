@@ -116,6 +116,11 @@ class ScatterplotView {
         this.initGL(canvasChart.node());
     }
 
+    clear() {
+        this.gl.clearColor(1.0, 1.0, 1.0, 1.0);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+    }
+
     initGL(canvas) {
         //
         this.gl = canvas.getContext("webgl2");

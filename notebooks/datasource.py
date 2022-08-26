@@ -23,7 +23,7 @@ class DataSource:
         self.numChunksProcessed = 0
 
     def restart(self):
-        pass
+        self.setRestart = True
 
     def getProgress(self):
         return (self.numChunksProcessed,self.numChunks)
@@ -34,6 +34,7 @@ class DataSource:
         df = pd.read_csv(_file, chunksize=self.chSize)
 
         for chunk in df:
+            print('next chunk')
             if self.setRestart:
                 break
             else:

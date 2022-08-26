@@ -130,6 +130,12 @@ class LineChart {
 
     clear() {
         //TODO: clear svg if needed
+        this.svg.select('#' + this.id + '_xaxis').selectAll('*').remove();
+        this.svg.select('#' + this.id + '_yaxis').selectAll('*').remove();
+        this.svg.select('#' + this.id + '_brush').selectAll('*').remove();
+        this.svg.select('#' + this.id + '_data').select('path').attr('d', undefined);
+        this.svg.select('#' + this.id + 'Label').text('');
+        this.data = undefined
     }
 
     render() {
@@ -286,6 +292,10 @@ class LineChartView {
 
     setBrushExtent(extent) {
         this.chart.setBrushExtent(extent);
+    }
+
+    clear() {
+        this.chart.clear();
     }
 
 };

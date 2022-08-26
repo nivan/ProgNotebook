@@ -49,7 +49,6 @@ var ProgScatterView = widgets.DOMWidgetView.extend({
         this.model.on('change:marginals', this.changeMarginals, this);
         this.model.on('change:scatData', this.changeScatData, this);
         this.model.on('change:progress', this.changeProgress, this);
-        this.model.on('change:restart', this.changeRestart, this);
     },
     changeMarginals: function () {
         var marginals = JSON.parse(this.model.get('marginals'));
@@ -63,16 +62,8 @@ var ProgScatterView = widgets.DOMWidgetView.extend({
         console.log(this);
         this.model.set('restart', 1);
         this.touch();
-    },
-    changeRestart: function () {
-        if (this.model.get('restart') == 0) {
-            console.log('Clear View!');
-        }
-        else {
-            console.log('Do Nothing!');
-        }
-    }
-    , changeProgress: function () {
+        this.myWidget.clear();
+    }, changeProgress: function () {
         var _progressData = JSON.parse(this.model.get('progress'));
         var myProgress = 0;
         if (_progressData['max'] > 0)

@@ -114,6 +114,13 @@ class ProgWidget {
     setMissingData() {
         //pass
     }
+
+    clear() {
+        this.scatterplot.clear();
+        this.marginalX.clear();
+        this.marginalY.clear();
+        this.marginalZ.clear();
+    }
 }
 
 module.exports = {

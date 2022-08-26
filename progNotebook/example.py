@@ -1,7 +1,8 @@
 import ipywidgets as widgets
 from traitlets import Unicode, Int
 import json
-
+import multiprocessing
+import time
 # See js/lib/example.js for the frontend counterpart to this file.
 
 
@@ -68,12 +69,25 @@ class ProgScatterWidget(widgets.DOMWidget):
     #
     restart = Int(0).tag(sync=True)
 
-    def __init__(self, **kwargs):
+    def __init__(self, dataSource, **kwargs):
         widgets.DOMWidget.__init__(self, **kwargs) # Call the base.
+        self.dataSource = dataSource
+        self._process = None
 
-       
+    def start(self):
+        self._process = multiprocessing.Process(target=self.dataSource.start)
+        self._process.start()
+
+    def signalRestart(self):        
+        self._process.kill()
+        self.restart = 0        
+        print('Restarting')
+        time.sleep(1)            
+        self.start()
+
     def _restart_changed(self, name, old_value, new_value):
-        print('Restart changed!!!!!!',name,old_value,new_value)
+        if new_value == 1:
+            self.signalRestart()
 
 
     def _value_changed(self, name, old_value, new_value):
