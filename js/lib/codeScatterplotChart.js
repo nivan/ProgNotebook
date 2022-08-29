@@ -181,8 +181,8 @@ class ScatterplotView {
         this.colorMapTexture = colorMaptexture;
         //
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.colorMapTexture);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
         //
         var colormap = utils.getColormap(this.currentColormap);
@@ -208,7 +208,10 @@ class ScatterplotView {
         this.yScale.domain(dt.yDomainRange);
         this.drawAxis(dt.xLabel, dt.yLabel);
         //
-        this.drawLegend(dt.zDomainRange, dt.zLabel);
+        if (dt.type == 'count')
+            this.drawLegend([0, 1], dt.zLabel);
+        else
+            this.drawLegend(dt.zDomainRange, dt.zLabel);
         //
         this.zDomainRange = dt.zDomainRange;
 

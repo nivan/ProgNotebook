@@ -86,14 +86,14 @@ class BinnedScat:
             self._buffer.append(pt)
             self._bbAddPoint(pt)
         elif numPointsAlreadyStored == self._initialBufferSize:
-            # build first summary
+            # build first summary            
             self._buffer.append(pt)
             for pt in self._buffer:
                 # bin
                 xIndex = min(
                     self._resX-1, int(((pt[0] - self._bb['xMin'])/(self._bb['xMax'] - self._bb['xMin']))*self._resX))
                 yIndex = min(
-                    self._resY-1, int(((pt[1] - self._bb['yMin'])/(self._bb['yMax'] - self._bb['yMin']))*self._resY))
+                    self._resY-1, int(((pt[1] - self._bb['yMin'])/(self._bb['yMax'] - self._bb['yMin']))*self._resY))                                
                 self._addPoint((xIndex, yIndex), pt)
             # fix bb and
             self._bbAddPoint(pt)
@@ -103,7 +103,7 @@ class BinnedScat:
             xIndex = int(((pt[0] - self._bb['xMin']) /
                          (self._bb['xMax'] - self._bb['xMin']))*self._resX)
             yIndex = int(((pt[1] - self._bb['yMin']) /
-                         (self._bb['yMax'] - self._bb['yMin']))*self._resY)
+                         (self._bb['yMax'] - self._bb['yMin']))*self._resY)            
 
             if 0 <= xIndex < self._resX and 0 <= yIndex < self._resY:  # key not in self._bins:
                 self._addPoint((xIndex, yIndex), pt)
@@ -138,7 +138,7 @@ class BinnedScat:
         pmf.pop() # remove the last one which are the estimate for the ones above max
         return [x, pmf]
 
-    def processChunk(self,chunk,progress):                        
+    def processCountChunk(self,chunk,progress):                        
         self.updateWithDataFrame(chunk, self._dimX, self._dimY, self._dimZ)
         valueBB = self.getAggregationRange()
         summary = self.getSummary()
@@ -153,6 +153,52 @@ class BinnedScat:
                     'xLabel': self._dimX,
                     'yLabel': self._dimY,
                     'zLabel': self._dimZ,
+                    'sparse': 0,
+                    'type': 'count',
+                    'bins': summary[0].tolist(),
+                    'counts': summary[1].tolist()
+                    }
+
+            #
+            histResolution = 10
+            pointsX = self.getMarginalHistogram(Axis.X,histResolution)
+            pointsX = [[pointsX[0][i],pointsX[1][i]] for i in range(len(pointsX[0]))]
+            #
+            pointsY = self.getMarginalHistogram(Axis.Y,histResolution)
+            pointsY = [[pointsY[0][i],pointsY[1][i]] for i in range(len(pointsY[0]))]
+            #
+            zHist = self.getCountHistogram()
+            numSplits = 10 + 1
+            xMin = zHist['range'][0]
+            xMax = zHist['range'][1]
+            step = (xMax - xMin) / numSplits
+            splits = [xMin + (i*step) for i in range(0, numSplits)]
+            pointsZ = list(zip(splits,list(zHist['values'])))
+            #
+            mx = {'points': pointsX, 'xLabel': 'Marginal ' + self._dimX}        
+            my = {'points': pointsY, 'xLabel': 'Marginal ' + self._dimY}
+            mz = {'points': pointsZ, 'xLabel': 'Marginal ' + self._dimZ}
+            obj = {"mx":mx,"my":my,"mz":mz}
+            myProgress = {'current': progress[0], 'max': progress[1]}
+            #
+            self._callback(scatData,obj,myProgress)
+
+    def processChunk(self,chunk,progress):                        
+        self.updateWithDataFrame(chunk, self._dimX, self._dimY, self._dimZ)
+        valueBB = self.valueBB#self.getAggregationRange()
+        summary = self.getSummary()
+        # build data to pass to widget
+        if summary:
+            bbox = self.getFixedBoundingBox()
+            scatData = {'xDomainRange': bbox[0],
+                    'yDomainRange': bbox[1],
+                    'zDomainRange': valueBB,
+                    'xRes': self._resX,
+                    'yRes': self._resY,
+                    'xLabel': self._dimX,
+                    'yLabel': self._dimY,
+                    'zLabel': self._dimZ,
+                    'type': 'aggr',
                     'sparse': 0,
                     'bins': summary[0].tolist(),
                     'counts': summary[1].tolist()
@@ -181,13 +227,6 @@ class BinnedScat:
             myProgress = {'current': progress[0], 'max': progress[1]}
             #
             self._callback(scatData,obj,myProgress)
-            # try:
-            #     self.marginals = json.dumps(obj)
-            #     self.scatData = json.dumps(scatData)
-            #     self.progress = json.dumps(myProgress)
-            # except:
-            #     print(scat.getSummary())
-            #     halt
 
     def getAggregationRange(self):
         return self.valueBB
@@ -229,7 +268,7 @@ class CountBinScat(BinnedScat):
 
     def getSummary(self):
         if self.getNumPoints() >= self._initialBufferSize:
-            result = self._bins.flatten()  # maybe store already flattened
+            result = self._bins.flatten()  # maybe store already flattened            
             return (result, result)
         else:
             return None
