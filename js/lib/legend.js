@@ -101,10 +101,12 @@ function Legend(svg, color, {
 
         tickValues = d3.range(-1, thresholds.length + 1);
         tickFormat = function (i) {
-            if (thresholdFormat(thresholds[i], i) == undefined && i == -1)
-                return color.domain()[0];
-            else if (thresholdFormat(thresholds[i], i) == undefined && i == thresholds.length)
-                return color.domain()[1];
+            if (i == -1) {
+                return thresholdFormat(color.domain()[0]);
+            }
+            else if (i == thresholds.length) {
+                return thresholdFormat(color.domain()[1]);
+            }
             else
                 return thresholdFormat(thresholds[i], i);
         }
@@ -142,7 +144,7 @@ function Legend(svg, color, {
         .call(g => g.select(".domain").remove())
         .call(g => g.append("text")
             .attr("x", marginLeft)
-            .attr("y", marginTop + marginBottom - height - 10)
+            .attr("y", marginTop + marginBottom - height - 5)
             .attr("fill", "currentColor")
             .attr("text-anchor", "start")
             .attr("font-weight", "bold")

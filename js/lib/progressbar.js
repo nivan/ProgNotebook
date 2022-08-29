@@ -82,8 +82,9 @@ class ProgressBar {
                 .attr('y', this.barHeight / 2);
 
             //
+            var value = this.currentState.toFixed(1);
             this.svg.select('#progress-label')
-                .text(this.currentState + '%');
+                .text(value + '%');
         }
     }
 

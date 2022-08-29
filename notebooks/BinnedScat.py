@@ -126,8 +126,10 @@ class BinnedScat:
             kll = self._marginalX
         elif axis == Axis.Y:
             kll = self._marginalY
-        else:
+        elif axis == Axis.Z:
             kll = self._marginalZ
+        else:
+            halt
 
         numSplits = nBins + 1
         xMin = kll.get_min_value()
@@ -177,7 +179,7 @@ class BinnedScat:
             #
             mx = {'points': pointsX, 'xLabel': 'Marginal ' + self._dimX}        
             my = {'points': pointsY, 'xLabel': 'Marginal ' + self._dimY}
-            mz = {'points': pointsZ, 'xLabel': 'Marginal ' + self._dimZ}
+            mz = {'points': pointsZ, 'xLabel': 'Count Bins '}
             obj = {"mx":mx,"my":my,"mz":mz}
             myProgress = {'current': progress[0], 'max': progress[1]}
             #
@@ -200,10 +202,9 @@ class BinnedScat:
                     'zLabel': self._dimZ,
                     'type': 'aggr',
                     'sparse': 0,
-                    'bins': summary[0].tolist(),
-                    'counts': summary[1].tolist()
-                    }
-
+                    'bins': summary[0],
+                    'counts': summary[1]
+                    }            
             #
             histResolution = 10
             pointsX = self.getMarginalHistogram(Axis.X,histResolution)
@@ -212,13 +213,8 @@ class BinnedScat:
             pointsY = self.getMarginalHistogram(Axis.Y,histResolution)
             pointsY = [[pointsY[0][i],pointsY[1][i]] for i in range(len(pointsY[0]))]
             #
-            zHist = self.getCountHistogram()
-            numSplits = 10 + 1
-            xMin = zHist['range'][0]
-            xMax = zHist['range'][1]
-            step = (xMax - xMin) / numSplits
-            splits = [xMin + (i*step) for i in range(0, numSplits)]
-            pointsZ = list(zip(splits,list(zHist['values'])))
+            pointsZ = self.getMarginalHistogram(Axis.Z,histResolution)
+            pointsZ = [[pointsZ[0][i],pointsZ[1][i]] for i in range(len(pointsZ[0]))]
             #
             mx = {'points': pointsX, 'xLabel': 'Marginal ' + self._dimX}        
             my = {'points': pointsY, 'xLabel': 'Marginal ' + self._dimY}
@@ -311,22 +307,42 @@ class QuantileBinScat(BinnedScat):
     def __init__(self, _callback, x, y, z, resX, resY, initialBufferSize):
         super().__init__(_callback, x, y, z, resX, resY, initialBufferSize)
         self._bins = {}
+        self._counts = np.zeros((resX, resY))
+        self.q = 0.25
 
     def _addPoint(self, key, pt):
         if key not in self._bins:
             self._bins[key] = kll_floats_sketch(BinnedScat.kllParam)
         self._bins[key].update(pt[2])
+        self._counts[key[0]][key[1]] += 1
 
-    def getSummary(self, q):
-        # this shoudl use the default for not available
-        result = np.zeros((self._resX, self._resY))
+    def _getValueRange(self):
+        results = [float('inf'), float('-inf')]
         for i in range(self._resX):
             for j in range(self._resY):
                 if (i, j) in self._bins:
-                    result[i, j] = self._bins[(i, j)].get_quantile(q)
+                    quant = self._bins[(i, j)].get_quantile(self.q)
+                    results[0] = min(results[0], quant)
+                    results[1] = max(results[1], quant)
 
-        return result  # TODO: flatten??
+        return results
 
+    def setQ(self,qq):
+        self.q = qq
+
+    def getSummary(self):
+        if self.getNumPoints() >= self._initialBufferSize:            
+            counts = self._counts.flatten()
+            quantiles = []
+            for i in range(self._resX):
+                for j in range(self._resY):
+                    if (i, j) in self._bins:
+                        quantiles.append(self._bins[(i, j)].get_quantile(self.q))    
+                    else:
+                        quantiles.append(0)
+            return (quantiles, counts.tolist())
+        else:
+            return None 
 
 def test():
     import pandas as pd

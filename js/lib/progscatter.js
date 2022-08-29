@@ -66,8 +66,9 @@ var ProgScatterView = widgets.DOMWidgetView.extend({
     }, changeProgress: function () {
         var _progressData = JSON.parse(this.model.get('progress'));
         var myProgress = 0;
-        if (_progressData['max'] > 0)
-            myProgress = Math.round(100 * (_progressData['current'] / _progressData['max']));
+        if (_progressData['max'] > 0) {
+            myProgress = 100 * (_progressData['current'] / _progressData['max']);//Math.round(100 * (_progressData['current'] / _progressData['max']));            
+        }
         this.myWidget.setProgress(myProgress);
     }
 });

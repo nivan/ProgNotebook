@@ -50,7 +50,7 @@ class ScatterplotView {
         // axis groups
         svg.append('g')
             .attr('id', this.id + '_gxAxis')
-            .attr('transform', `translate(0, ${height + 1})`);
+            .attr('transform', `translate(0, ${height})`);
 
         svg.append('g')
             .attr('id', this.id + '_gyAxis')
@@ -195,7 +195,7 @@ class ScatterplotView {
     drawLegend(zDomainRange = [0, 1], zLabel = "") {
         var scale = d3.scaleQuantize().domain(zDomainRange).range(utils.getColormapD3(this.currentColormap));
         this.legendGroup.selectAll("*").remove();
-        legend.Legend(this.legendGroup, scale, { 'title': zLabel });
+        legend.Legend(this.legendGroup, scale, { 'title': zLabel, 'tickFormat': ".1f" });
     }
 
     /**
